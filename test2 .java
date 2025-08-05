@@ -20,8 +20,9 @@ public class Test1 {
     @BeforeMethod
     public void setUp() {
         driver = new FirefoxDriver();
-        js = ( HashMap<>();
-        driver.manage().window().setSize(new Dimension(1536, 1048));
+        js = (JavascriptExecutor) driver;
+        vars = new HashMap<>();
+        driver.manage().window().setSize(new Dimension(1936, 1048));
     }
 
     @AfterMethod
@@ -30,9 +31,9 @@ public class Test1 {
     }
 
     @Test
-    public void test01() {
+    public void test1() {
         driver.get("https://www.saucedemo.com/");
-        
+
         // Login
         driver.findElement(By.cssSelector("[data-test='username']")).click();
         driver.findElement(By.cssSelector("[data-test='username']")).sendKeys("standard_user");
@@ -40,26 +41,29 @@ public class Test1 {
         driver.findElement(By.cssSelector("[data-test='password']")).sendKeys("secret_sauce");
         driver.findElement(By.cssSelector("[data-test='login-button']")).click();
 
-        // Wait for inventory items to be clickable
+        // Wait for inventory items
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".inventory_item")));
 
-        // Validate presence of elements
-        List<WebElement> items = driver.findElements(By.cssSelector(".inventory_item"));
-        assert items.size() > 0 : "No inventory items found";
+        // Validate inventory elements
+        assert driver.findElements(By.cssSelector(".inventory_item")).size() > 0;
+        assert driver.findElements(By.cssSelector(".inventory_item_name")).size() > 0;
+        assert driver.findElements(By.cssSelector(".inventory_item_price")).size() > 0;
+        assert driver.findElements(By.cssSelector(".btn_inventory")).size() > 0;
 
-        List<WebElement> itemNames = driver.findElements(By.cssSelector(".inventory_item_name"));
-        assert itemNames.size() > 0 : "No item names found";
-
-        List<WebElement> itemPrices = driver.findElements(By.cssSelector(".inventory_item_price"));
-        assert itemPrices.size() > 0 : "No item prices found";
-
-        List<WebElement> addButtons = driver.findElements(By.cssSelector(".btn_inventory"));
-        assert addButtons.size() > 0 : "No add-to-cart buttons found";
-
-        // Double-click on a specific item
+        // Double-click on backpack item
         WebElement backpack = driver.findElement(By.cssSelector("[data-test='add-to-cart-sauce-labs-backpack']"));
-        Actions builder = new Actions(driver);
-        builder.doubleClick(backpack).perform();
+        new Actions(driver).doubleClick(backpack).perform();
+
+        // Add first two items to cart
+        driver.findElement(By.cssSelector(".inventory_item:nth-child(1) .btn_primary")).click();
+        driver.findElement(By.cssSelector(".inventory_item:nth-child(2) .btn_primary")).click();
+
+        // Proceed to checkout
+        driver.findElement(By.cssSelector(".shopping_cart_link")).click();
+        driver.findElement(By.linkText("CHECKOUT")).click();
+        driver.findElement(By.id("first-name")).sendKeys("John");
+        driver.findElement(By.id("last-name")).sendKeys("Doe");
+        driver.findElement(By.id("postal-code")).sendKeys("12345");
     }
 }
